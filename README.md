@@ -36,7 +36,7 @@ GLOBAL OPTIONS:
 
 ### Build from source
 ```bash
-go get -u https://github.com/Static-Flow/infiniMaze
+go get -u github.com/Static-Flow/infiniMaze
 ```
 
 ## Bug Tracker
