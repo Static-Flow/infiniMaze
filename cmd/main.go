@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/itchyny/maze/internal"
+	"github.com/Static-Flow/infiniMaze/internal"
 	"os"
 )
 
