@@ -1,57 +1,52 @@
-# maze [![CI Status](https://github.com/itchyny/maze/workflows/CI/badge.svg)](https://github.com/itchyny/maze/actions)
+# InfiniMaze : an infinite, persistent, procedurally generated, explorable maze
 
-![maze](https://raw.githubusercontent.com/wiki/itchyny/maze/image/maze1.gif)
+Built off the great work by @itchyny here: https://github.com/itchyny/maze
 
 ## Usage
-The `maze` command without the arguments prints the random maze to the standard output.
+The `infiniMaze` command without arguments starts a maze that matches the terminal size in the Color mode.
 ```sh
 infiniMaze
 ```
-![maze](https://raw.githubusercontent.com/wiki/itchyny/maze/image/maze6.gif)
 
-We can play the maze on the terminal with `--interactive`.
+You can get a list of command line options with the below command:
 ```sh
-infiniMaze --interactive
+$ infiniMaze --h
+NAME:
+   infiniMaze - InfiniMaze is an infinite, persistent, procedurally generated, explorable maze
+
+USAGE:
+   infiniMaze [global options] [arguments...]
+
+VERSION:
+   0.0.1
+
+AUTHOR:
+   Static-Flow
+
+GLOBAL OPTIONS:
+   --width value     The width of the infiniMaze
+   --height value    The height of the infiniMaze
+   --format default  Output format, default or `ascii`
+   --seed value      The random seed
+   --help, -h        Shows the help of the command
+   --version, -v     print the version
 ```
-![maze](https://raw.githubusercontent.com/wiki/itchyny/maze/image/maze2.gif)
-
-The `--format color` is a good option to print the colored maze. Also we can specify the size of the maze with `--width` and `--height`.
-```sh
-infiniMaze --width 20 --height 10 --format color
-```
-![maze](https://raw.githubusercontent.com/wiki/itchyny/maze/image/maze3.gif)
-
-We can toggle the solution with the `s` key.
-![maze](https://raw.githubusercontent.com/wiki/itchyny/maze/image/maze4.gif)
-
-If we change the font size of the terminal smaller, we get a large maze.
-![maze](https://raw.githubusercontent.com/wiki/itchyny/maze/image/maze5.gif)
 
 ## Installation
-### Homebrew
-```bash
-brew install itchyny/tap/infiniMaze
-```
 
 ### Build from source
 ```bash
-go get -u github.com/itchyny/infiniMaze/cmd/infiniMaze
+go get -u https://github.com/Static-Flow/infiniMaze
 ```
 
 ## Bug Tracker
-Report bug at [Issues・itchyny/maze - GitHub](https://github.com/itchyny/maze/issues).
+Report bug at [Issues・Static-Flow/infiniMaze - GitHub](https://github.com/Static-Flow/infiniMaze/issues).
 
 ## Author
-itchyny (https://github.com/itchyny)
+Static-Flow (https://github.com/Static-Flow)
 
 ## License
 This software is released under the MIT License, see LICENSE.
 
 ## Special thanks
 Special thanks to the [termbox-go](https://github.com/nsf/termbox-go) library.
-
-## References
-- [Maze generation algorithm - Wikipedia, the free encyclopedia](https://en.wikipedia.org/wiki/Maze_generation_algorithm)
-- [Maze solving algorithm - Wikipedia, the free encyclopedia](https://en.wikipedia.org/wiki/Maze_solving_algorithm)
-- [lunixbochs/maze: Maze generation and salvation](https://github.com/lunixbochs/maze)
-- [willfrew/maze-generation: Some maze generation algorithms written in Go](https://github.com/willfrew/maze-generation)
