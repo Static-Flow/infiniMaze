@@ -3,9 +3,14 @@
 Built off the great work by @itchyny here: https://github.com/itchyny/maze
 
 ## Usage
-The `infiniMaze` command without arguments starts a maze that matches the terminal size in the Color mode.
+The `infiniMaze` command without arguments starts a console version of InfiniMaze in the Color mode with a size that matches the console window.
 ```sh
 infiniMaze
+```
+
+To run the web verison run the below command and visit [http://localhost:3000/](http://localhost:3000/)
+```sh
+infiniMaze --web
 ```
 
 You can get a list of command line options with the below command:
@@ -18,7 +23,7 @@ USAGE:
    infiniMaze [global options] [arguments...]
 
 VERSION:
-   0.0.1
+   0.0.2
 
 AUTHOR:
    Static-Flow
@@ -28,15 +33,17 @@ GLOBAL OPTIONS:
    --height value    The height of the infiniMaze
    --format default  Output format, default or `ascii`
    --seed value      The random seed
-   --help, -h        Shows the help of the command
-   --version, -v     print the version
+   --help            Shows the help of the command (default: false)
+   --scale value     Scale output image (default: 0)
+   --web             Runs the web version of InfiniMaze (default: false)
+   --version, -v     print the version (default: false)
 ```
 
 ## Installation
 
 ### Build from source
 ```bash
-go get -u github.com/Static-Flow/infiniMaze
+go get -u github.com/Static-Flow/infiniMaze/infiniMaze
 ```
 
 ## Bug Tracker
