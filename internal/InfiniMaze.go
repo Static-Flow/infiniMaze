@@ -1,6 +1,8 @@
 package internal
 
-import "fmt"
+import (
+	"fmt"
+)
 
 /*
 This struct holds state for the entire application
@@ -9,7 +11,18 @@ type InfiniMaze struct {
 	CurrentMaze *Maze            //A Maze Struct containing the state of the currently visible Maze
 	mazeHeights int              //Global height for all mazes
 	mazeWidths  int              //Global width for all mazes
+	Scale       int              //How much to scale up the PNG image of the maze
 	globalMazes map[string]*Maze //Map of all generated Maze structs. This allows us to connect adjoining mazes as they are made
+}
+
+func (infiniMaze *InfiniMaze) ChangeCurrentMaze(globalIndexId string) {
+	if newMaze, exists := infiniMaze.globalMazes[globalIndexId]; exists {
+		fmt.Printf("Changing Maze to: %s\n", globalIndexId)
+		infiniMaze.CurrentMaze = newMaze
+		infiniMaze.GenNewMazes(infiniMaze.CurrentMaze)
+	} else {
+		fmt.Println("Maze " + globalIndexId + " does not exist")
+	}
 }
 
 /*
@@ -118,6 +131,7 @@ func NewInfiniMaze(config *Config) *InfiniMaze {
 	infiniMaze := &InfiniMaze{
 		mazeHeights: config.Height,
 		mazeWidths:  config.Width,
+		Scale:       config.Scale,
 		globalMazes: map[string]*Maze{},
 	}
 	//Initial infiniMaze with a starting maze based on user supplied size or default (terminal size), and centered at 0,0

@@ -16,6 +16,8 @@ type Config struct {
 	Format *Format
 	Seed   int64
 	Output io.Writer
+	IsWeb  bool
+	Scale  int
 }
 
 func makeConfig(ctx *cli.Context) (*Config, []error) {
@@ -48,9 +50,20 @@ func makeConfig(ctx *cli.Context) (*Config, []error) {
 		format = Ascii
 	}
 
+	scale := ctx.Int("scale")
+
 	seed := int64(ctx.Int("seed"))
 	if !ctx.IsSet("seed") {
 		seed = time.Now().UnixNano()
+	}
+	web := ctx.Bool("web")
+	if web {
+		format = Ascii
+		//I don't really understand how to generalize this yet so I hardcode it for the web version
+		//TODO: understand how to get image sizes based on these 3 values
+		scale = 20
+		width = 25
+		height = 25
 	}
 
 	return &Config{
@@ -59,5 +72,7 @@ func makeConfig(ctx *cli.Context) (*Config, []error) {
 		Format: format,
 		Seed:   seed,
 		Output: output,
+		Scale:  scale,
+		IsWeb:  web,
 	}, nil
 }

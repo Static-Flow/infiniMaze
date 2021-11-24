@@ -1,10 +1,15 @@
 package internal
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/nsf/termbox-go"
+	"image"
+	"image/color"
+	"image/png"
 	"io"
 	"math/rand"
+	"strings"
 )
 
 /*
@@ -18,10 +23,10 @@ type Maze struct {
 	YLocation  int       //Global Y position within InfiniMaze
 	Exits      [4]*Point //Point array for the four "doors" leading the adjoining Mazes
 	Cursor     *Point    //Users location within the Maze
-	NorthMaze  *Maze     //Reference to the Maze North of the current maze
-	SouthMaze  *Maze     //Reference to the Maze South of the current maze
-	WestMaze   *Maze     //Reference to the Maze West of the current maze
-	EastMaze   *Maze     //Reference to the Maze East of the current maze
+	NorthMaze  *Maze     `json:"-"` //Reference to the Maze North of the current maze
+	SouthMaze  *Maze     `json:"-"` //Reference to the Maze South of the current maze
+	WestMaze   *Maze     `json:"-"` //Reference to the Maze West of the current maze
+	EastMaze   *Maze     `json:"-"` //Reference to the Maze East of the current maze
 }
 
 // NewMaze creates a new Maze
@@ -176,6 +181,47 @@ func (maze *Maze) Print(writer io.Writer, format *Format) {
 			_, _ = fmt.Fprint(writer, str)
 		}
 	}
+}
+
+func plot(img *image.RGBA, x, y, scale int, c color.Color) {
+	for dy := 0; dy < scale; dy++ {
+		for dx := 0; dx < scale; dx++ {
+			img.Set(x*scale+dx, y*scale+dy, c)
+		}
+	}
+}
+
+// PrintImage outputs the maze to the IO writer as PNG image
+func (maze *Maze) PrintImage(writer io.Writer, format *Format, scale int) {
+	var buf bytes.Buffer
+	maze.Print(&buf, format)
+	lines := strings.Split(strings.TrimSpace(buf.String()), "\n")
+	for i, line := range lines {
+		lines[i] = strings.TrimSpace(line)
+	}
+	width := len(lines[0]) / 2
+	height := len(lines)
+	img := image.NewRGBA(image.Rect(0, 0, width*scale, height*scale))
+	green := color.RGBA{0, 255, 0, 255}
+	for y := 0; y < height; y++ {
+		if y >= len(lines) {
+			continue
+		}
+		for x := 0; x < width; x++ {
+			if x*2 >= len(lines[y]) {
+				continue
+			}
+			switch lines[y][x*2 : x*2+2] {
+			case "##":
+				plot(img, x, y, scale, color.Black)
+			case "<<", "VV", "^^", ">>":
+				plot(img, x, y, scale, green)
+			default:
+				plot(img, x, y, scale, color.White)
+			}
+		}
+	}
+	png.Encode(writer, img)
 }
 
 // Write out the Maze to the writer channel

@@ -28,12 +28,17 @@ func action(ctx *cli.Context) error {
 	rand.Seed(config.Seed)
 
 	maze := NewInfiniMaze(config)
-	err := termbox.Init()
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, err.Error())
-		return nil
+
+	if config.IsWeb {
+		StartServer(maze)
+	} else {
+		err := termbox.Init()
+		if err != nil {
+			_, _ = fmt.Fprintf(os.Stderr, err.Error())
+			return nil
+		}
+		defer termbox.Close()
+		interactive(maze, config.Format)
 	}
-	defer termbox.Close()
-	interactive(maze, config.Format)
 	return nil
 }

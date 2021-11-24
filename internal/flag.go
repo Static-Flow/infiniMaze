@@ -23,4 +23,12 @@ var flags = []cli.Flag{
 		Name:  "help, h",
 		Usage: "Shows the help of the command",
 	},
+	&cli.IntFlag{
+		Name:  "scale",
+		Usage: "Scale output image",
+	},
+	&cli.BoolFlag{
+		Name:  "web",
+		Usage: "Runs the web version of InfiniMaze",
+	},
 }
