@@ -5,19 +5,19 @@
 ## Usage
 The `maze` command without the arguments prints the random maze to the standard output.
 ```sh
-maze
+infiniMaze
 ```
 ![maze](https://raw.githubusercontent.com/wiki/itchyny/maze/image/maze6.gif)
 
 We can play the maze on the terminal with `--interactive`.
 ```sh
-maze --interactive
+infiniMaze --interactive
 ```
 ![maze](https://raw.githubusercontent.com/wiki/itchyny/maze/image/maze2.gif)
 
 The `--format color` is a good option to print the colored maze. Also we can specify the size of the maze with `--width` and `--height`.
 ```sh
-maze --width 20 --height 10 --format color
+infiniMaze --width 20 --height 10 --format color
 ```
 ![maze](https://raw.githubusercontent.com/wiki/itchyny/maze/image/maze3.gif)
 
@@ -30,12 +30,12 @@ If we change the font size of the terminal smaller, we get a large maze.
 ## Installation
 ### Homebrew
 ```bash
-brew install itchyny/tap/maze
+brew install itchyny/tap/infiniMaze
 ```
 
 ### Build from source
 ```bash
-go get -u github.com/itchyny/maze/cmd/maze
+go get -u github.com/itchyny/infiniMaze/cmd/infiniMaze
 ```
 
 ## Bug Tracker
