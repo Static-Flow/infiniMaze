@@ -1,4 +1,4 @@
-package main
+package internal
 
 // Format is the printing format of the infiniMaze
 type Format struct {

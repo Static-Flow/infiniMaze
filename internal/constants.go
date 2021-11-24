@@ -1,4 +1,11 @@
-package main
+package internal
+
+var (
+	name        = "infiniMaze"
+	version     = "0.0.1"
+	description = "InfiniMaze is an infinite, persistent, procedurally generated, explorable maze"
+	author      = "Static-Flow"
+)
 
 // The differences in the x-y coordinate
 var (

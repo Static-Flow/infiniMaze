@@ -1,8 +1,8 @@
-package main
+package internal
 
 import "github.com/urfave/cli"
 
-func run(args []string) int {
+func Run(args []string) int {
 	app := newApp()
 	if app.Run(args) != nil {
 		return 1

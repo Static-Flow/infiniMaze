@@ -1,4 +1,4 @@
-package main
+package internal
 
 // Point on a Maze
 type Point struct {
