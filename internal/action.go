@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/nsf/termbox-go"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 func action(ctx *cli.Context) error {

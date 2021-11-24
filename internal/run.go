@@ -1,6 +1,6 @@
 package internal
 
-import "github.com/urfave/cli"
+import "github.com/urfave/cli/v2"
 
 func Run(args []string) int {
 	app := newApp()
@@ -16,7 +16,9 @@ func newApp() *cli.App {
 	app.HelpName = name
 	app.Usage = description
 	app.Version = version
-	app.Author = author
+	app.Authors = []*cli.Author{{
+		Name: author,
+	}}
 	app.Flags = flags
 	app.HideHelp = true
 	app.Action = action
