@@ -2,7 +2,7 @@ package internal
 
 var (
 	name        = "infiniMaze"
-	version     = "0.0.1"
+	version     = "0.0.2"
 	description = "InfiniMaze is an infinite, persistent, procedurally generated, explorable maze"
 	author      = "Static-Flow"
 )
