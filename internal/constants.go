@@ -1,7 +1,7 @@
 package internal
 
 var (
-	name        = "infiniMaze"
+	name        = "InfiniMaze"
 	version     = "0.0.2"
 	description = "InfiniMaze is an infinite, persistent, procedurally generated, explorable maze"
 	author      = "Static-Flow"
@@ -9,8 +9,8 @@ var (
 
 // The differences in the x-y coordinate
 var (
-	dx = map[int]int{Up: -1, Down: 1, Left: 0, Right: 0}
-	dy = map[int]int{Up: 0, Down: 0, Left: -1, Right: 1}
+	dx = map[int]int{Up: 0, Down: 0, Left: -1, Right: 1}
+	dy = map[int]int{Up: -1, Down: 1, Left: 0, Right: 0}
 )
 
 // Maze cell configurations
@@ -20,12 +20,6 @@ const (
 	Down
 	Left
 	Right
-)
-
-// The solution path is represented by (Up|Down|Left|Right) << SolutionOffset.
-// The user's path is represented by (Up|Down|Left|Right) << VisitedOffset.
-const (
-	VisitedOffset = 8
 )
 
 // Directions is the set of all the directions

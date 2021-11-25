@@ -31,4 +31,9 @@ var flags = []cli.Flag{
 		Name:  "web",
 		Usage: "Runs the web version of InfiniMaze",
 	},
+	&cli.StringFlag{
+		Name:        "webPort",
+		Usage:       "Sets the port for the web version of InfiniMaze",
+		DefaultText: "3000",
+	},
 }

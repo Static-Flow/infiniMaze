@@ -2,17 +2,22 @@ package internal
 
 import (
 	"fmt"
+	"github.com/gin-contrib/sessions"
 )
 
 /*
 This struct holds state for the entire application
 */
 type InfiniMaze struct {
-	CurrentMaze *Maze            //A Maze Struct containing the state of the currently visible Maze
-	mazeHeights int              //Global height for all mazes
-	mazeWidths  int              //Global width for all mazes
-	Scale       int              //How much to scale up the PNG image of the maze
-	globalMazes map[string]*Maze //Map of all generated Maze structs. This allows us to connect adjoining mazes as they are made
+	CurrentMaze    *Maze            //A Maze Struct containing the state of the currently visible Maze
+	mazeHeights    int              //Global height for all mazes
+	mazeWidths     int              //Global width for all mazes
+	mazeWebHeights int              //Global height for all web mazes
+	mazeWebWidths  int              //Global width for all web mazes
+	scale          int              //How much to scale up the PNG image of the maze
+	globalMazes    map[string]*Maze //Map of all generated Maze structs. This allows us to connect adjoining mazes as they are made
+	mazeSessions   map[string]*Maze //Map of current users to the map they are on
+	webPort        string           //Port for web server to listen on
 }
 
 func (infiniMaze *InfiniMaze) ChangeCurrentMaze(globalIndexId string) {
@@ -22,6 +27,58 @@ func (infiniMaze *InfiniMaze) ChangeCurrentMaze(globalIndexId string) {
 		infiniMaze.GenNewMazes(infiniMaze.CurrentMaze)
 	} else {
 		fmt.Println("Maze " + globalIndexId + " does not exist")
+	}
+}
+
+/*
+Checks the current users position against where the exits are on the current maze.
+If the move is valid we update the users position in the session
+*/
+func (infiniMaze *InfiniMaze) ValidateUserIsNearMapExit(session sessions.Session) bool {
+	currentPosition := session.Get("position").([]int)
+	if currentPosition[0] == infiniMaze.mazeWebWidths/2 && currentPosition[1] == 20 {
+		//Check North exit which should be X=WebWidth/2,Y=20
+		//Move current position to above the bottom door of the North maze the user moved to
+		currentPosition[1] = infiniMaze.mazeWebHeights - 20
+		session.Set("position", currentPosition)
+		_ = session.Save()
+		return true
+	} else if currentPosition[0] == infiniMaze.mazeWebWidths/2 && currentPosition[1] == infiniMaze.mazeWebHeights-20 {
+		//Check South exit which should be X=WebWidth/2,Y=WebHeight-20
+		//Move current position to below the top door of the South maze the user moved to
+		currentPosition[1] = 20
+		session.Set("position", currentPosition)
+		_ = session.Save()
+		return true
+	} else if currentPosition[0] == infiniMaze.mazeWebWidths-20 && currentPosition[1] == infiniMaze.mazeWebHeights/2 {
+		//Check East exit which should be X=WebWidth-20,Y=WebHeight/2
+		//Move current position to the right of the left door of the East maze the user moved to
+		currentPosition[0] = 20
+		session.Set("position", currentPosition)
+		_ = session.Save()
+		return true
+	} else if currentPosition[0] == 20 && currentPosition[1] == infiniMaze.mazeWebHeights/2 {
+		//Check West exit which should be X=20,Y=WebHeight/2
+		//Move current position to the left of the right door of the West maze the user moved to
+		currentPosition[0] = infiniMaze.mazeWebWidths - 20
+		session.Set("position", currentPosition)
+		_ = session.Save()
+		return true
+	} else {
+		fmt.Printf("User is not near the exit they say they are. They are at: %d,%d\n", currentPosition[0], currentPosition[1])
+		return false
+	}
+}
+
+func (infiniMaze *InfiniMaze) ChangeCurrentMazeForSession(session sessions.Session) {
+	id := session.Get("id").(string)
+	globalLocation := session.Get("globalIndex").(string)
+	if newMaze, exists := infiniMaze.globalMazes[globalLocation]; exists {
+		fmt.Printf("Changing Maze for session: %s to: %s\n", id, globalLocation)
+		infiniMaze.mazeSessions[id] = newMaze
+		infiniMaze.GenNewMazes(newMaze)
+	} else {
+		fmt.Println("Maze " + globalLocation + " does not exist")
 	}
 }
 
@@ -69,7 +126,7 @@ If one is not found, the new Maze is created, then they are both connected.
 func (infiniMaze *InfiniMaze) GenNewMazes(maze *Maze) {
 	if maze.NorthMaze == nil {
 		//calculate global maze id by performing the movement delta against the current Maze
-		stringLocationId := fmt.Sprintf("%d%d", maze.XLocation, maze.YLocation+1)
+		stringLocationId := fmt.Sprintf("%d,%d", maze.XLocation, maze.YLocation+1)
 		//Check if the maze given by the calculated id exists globally
 		if possibleMaze := infiniMaze.globalMazes[stringLocationId]; possibleMaze != nil {
 			//attach the two mazes to each other
@@ -85,7 +142,7 @@ func (infiniMaze *InfiniMaze) GenNewMazes(maze *Maze) {
 		}
 	}
 	if maze.SouthMaze == nil {
-		stringLocationId := fmt.Sprintf("%d%d", maze.XLocation, maze.YLocation-1)
+		stringLocationId := fmt.Sprintf("%d,%d", maze.XLocation, maze.YLocation-1)
 		if possibleMaze := infiniMaze.globalMazes[stringLocationId]; possibleMaze != nil {
 			maze.SouthMaze = possibleMaze
 			possibleMaze.NorthMaze = infiniMaze.CurrentMaze
@@ -99,7 +156,7 @@ func (infiniMaze *InfiniMaze) GenNewMazes(maze *Maze) {
 		}
 	}
 	if maze.WestMaze == nil {
-		stringLocationId := fmt.Sprintf("%d%d", maze.XLocation-1, maze.YLocation)
+		stringLocationId := fmt.Sprintf("%d,%d", maze.XLocation-1, maze.YLocation)
 		if possibleMaze := infiniMaze.globalMazes[stringLocationId]; possibleMaze != nil {
 			maze.WestMaze = possibleMaze
 			possibleMaze.EastMaze = infiniMaze.CurrentMaze
@@ -113,7 +170,7 @@ func (infiniMaze *InfiniMaze) GenNewMazes(maze *Maze) {
 		}
 	}
 	if maze.EastMaze == nil {
-		stringLocationId := fmt.Sprintf("%d%d", maze.XLocation+1, maze.YLocation)
+		stringLocationId := fmt.Sprintf("%d,%d", maze.XLocation+1, maze.YLocation)
 		if possibleMaze := infiniMaze.globalMazes[stringLocationId]; possibleMaze != nil {
 			maze.EastMaze = possibleMaze
 			possibleMaze.WestMaze = infiniMaze.CurrentMaze
@@ -129,15 +186,19 @@ func (infiniMaze *InfiniMaze) GenNewMazes(maze *Maze) {
 
 func NewInfiniMaze(config *Config) *InfiniMaze {
 	infiniMaze := &InfiniMaze{
-		mazeHeights: config.Height,
-		mazeWidths:  config.Width,
-		Scale:       config.Scale,
-		globalMazes: map[string]*Maze{},
+		mazeHeights:    config.Height,
+		mazeWebHeights: config.Height * config.Scale * 2,
+		mazeWebWidths:  config.Width * config.Scale * 2,
+		mazeWidths:     config.Width,
+		scale:          config.Scale,
+		globalMazes:    map[string]*Maze{},
+		webPort:        config.WebPort,
+		mazeSessions:   map[string]*Maze{},
 	}
 	//Initial infiniMaze with a starting maze based on user supplied size or default (terminal size), and centered at 0,0
 	maze := NewMaze(infiniMaze.mazeHeights, infiniMaze.mazeWidths, 0, 0)
 	//Maze keys are their "coordinates" converted to a string: i.e. "00", "-1-1", etc
-	infiniMaze.globalMazes["00"] = maze
+	infiniMaze.globalMazes["0,0"] = maze
 	infiniMaze.CurrentMaze = maze
 
 	//For the initial maze we generate the 4 mazes to the North, South, East, and West

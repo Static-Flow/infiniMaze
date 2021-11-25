@@ -11,13 +11,14 @@ import (
 
 // Config is the command configuration
 type Config struct {
-	Width  int
-	Height int
-	Format *Format
-	Seed   int64
-	Output io.Writer
-	IsWeb  bool
-	Scale  int
+	Width   int
+	Height  int
+	Format  *Format
+	Seed    int64
+	Output  io.Writer
+	IsWeb   bool
+	Scale   int
+	WebPort string
 }
 
 func makeConfig(ctx *cli.Context) (*Config, []error) {
@@ -67,12 +68,13 @@ func makeConfig(ctx *cli.Context) (*Config, []error) {
 	}
 
 	return &Config{
-		Width:  width,
-		Height: height,
-		Format: format,
-		Seed:   seed,
-		Output: output,
-		Scale:  scale,
-		IsWeb:  web,
+		Width:   width,
+		Height:  height,
+		Format:  format,
+		Seed:    seed,
+		Output:  output,
+		Scale:   scale,
+		IsWeb:   web,
+		WebPort: ctx.String("webPort"),
 	}, nil
 }

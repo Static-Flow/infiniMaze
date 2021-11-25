@@ -30,7 +30,9 @@ func action(ctx *cli.Context) error {
 	maze := NewInfiniMaze(config)
 
 	if config.IsWeb {
-		StartServer(maze)
+		if err := StartServer(maze); err != nil {
+			panic(err)
+		}
 	} else {
 		err := termbox.Init()
 		if err != nil {

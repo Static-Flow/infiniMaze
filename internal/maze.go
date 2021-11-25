@@ -32,7 +32,7 @@ type Maze struct {
 // NewMaze creates a new Maze
 func NewMaze(height int, width int, xLoc int, yLoc int) *Maze {
 	var directions [][]int
-	for x := 0; x < height; x++ {
+	for y := 0; y < height; y++ {
 		directions = append(directions, make([]int, width))
 	}
 	maze := &Maze{
@@ -47,7 +47,7 @@ func NewMaze(height int, width int, xLoc int, yLoc int) *Maze {
 			{height, width / 2}, //bottom wall exit
 			{height / 2, width}, //right wall exit
 		},
-		&Point{height / 2, width / 2},
+		&Point{width / 2, height / 2},
 		nil,
 		nil,
 		nil,
@@ -58,10 +58,13 @@ func NewMaze(height int, width int, xLoc int, yLoc int) *Maze {
 }
 
 // Neighbors gathers the nearest undecided points
-func (maze *Maze) Neighbors(point *Point) (neighbors []int) {
+func (maze *Maze) GetUnvisitedDirectionsFromPoint(point *Point) (neighbors []int) {
+	//Loop over the 4 Cardinal directions
 	for _, direction := range Directions {
+		//Move the Point we are collecting neighbors for in the current direction
 		next := point.Advance(direction)
-		if maze.Contains(next) && maze.Directions[next.X][next.Y] == 0 {
+		//If the advanced point is in the maze, and hasn't been visited add it to the neighbors list
+		if maze.Contains(next) && maze.Directions[next.Y][next.X] == 0 {
 			neighbors = append(neighbors, direction)
 		}
 	}
@@ -70,7 +73,7 @@ func (maze *Maze) Neighbors(point *Point) (neighbors []int) {
 
 // Connected judges whether the two points is connected by a path on the maze
 func (maze *Maze) Connected(point *Point, target *Point) bool {
-	dir := maze.Directions[point.X][point.Y]
+	dir := maze.Directions[point.Y][point.X]
 	for _, direction := range Directions {
 		if dir&direction != 0 {
 			next := point.Advance(direction)
@@ -84,22 +87,34 @@ func (maze *Maze) Connected(point *Point, target *Point) bool {
 
 // Next advances the Maze path randomly and returns the new point
 func (maze *Maze) Next(point *Point) *Point {
-	neighbors := maze.Neighbors(point)
-	if len(neighbors) == 0 {
+	unvisitedDirectionsFromPoint := maze.GetUnvisitedDirectionsFromPoint(point)
+	//If there are no unvisited neighbors return nil
+	if len(unvisitedDirectionsFromPoint) == 0 {
 		return nil
 	}
-	direction := neighbors[rand.Int()%len(neighbors)]
-	maze.Directions[point.X][point.Y] |= direction
-	next := point.Advance(direction)
-	maze.Directions[next.X][next.Y] |= Opposite[direction]
+	//pick a random neighbor from the list of available neighbors
+	randomDirection := unvisitedDirectionsFromPoint[rand.Int()%len(unvisitedDirectionsFromPoint)]
+	//Mark the direction you can move from this point to its neighbor by updating the points bitmap and it's connected neighbor's bitmap
+	maze.Directions[point.Y][point.X] |= randomDirection
+	next := point.Advance(randomDirection)
+	maze.Directions[next.Y][next.X] |= Opposite[randomDirection]
 	return next
 }
 
-// Generate the Maze
+// Generate the Maze using this algorithm https://en.wikipedia.org/wiki/Maze_generation_algorithm#Iterative_implementation
 func (maze *Maze) Generate() {
-	point := maze.Cursor
-	stack := []*Point{point}
+	var point *Point
+	//Step 1: select a starting Point
+	stack := []*Point{maze.Cursor}
+	//Step 2: while the stack is not empty
 	for len(stack) > 0 {
+		//2.1.A: Select a random Point index from the stack
+		i := rand.Int() % ((len(stack) + 1) / 2)
+		//2.1.B: Retrieve Point at index from stack
+		point = stack[i]
+		//2.1.C: Pop selected Point from stack
+		stack = append(stack[:i], stack[i+1:]...)
+		//2.2.A: Choose an unvisited neighbor
 		for {
 			point = maze.Next(point)
 			if point == nil {
@@ -107,22 +122,19 @@ func (maze *Maze) Generate() {
 			}
 			stack = append(stack, point)
 		}
-		i := rand.Int() % ((len(stack) + 1) / 2)
-		point = stack[i]
-		stack = append(stack[:i], stack[i+1:]...)
 	}
 	//We ensure that we don't block off the exit "doors" here after Maze generation is done
-	exitSquare := maze.Exits[0].Advance(Right)
-	maze.Next(exitSquare)
-
-	exitSquare = maze.Exits[1].Advance(Down)
-	maze.Next(exitSquare)
-
-	exitSquare = maze.Exits[2].Advance(Up)
-	maze.Next(exitSquare)
-
-	exitSquare = maze.Exits[3].Advance(Left)
-	maze.Next(exitSquare)
+	//exitSquare := maze.Exits[0].Advance(Right)
+	//maze.Next(exitSquare)
+	//
+	//exitSquare = maze.Exits[1].Advance(Down)
+	//maze.Next(exitSquare)
+	//
+	//exitSquare = maze.Exits[2].Advance(Up)
+	//maze.Next(exitSquare)
+	//
+	//exitSquare = maze.Exits[3].Advance(Left)
+	//maze.Next(exitSquare)
 
 }
 
@@ -148,12 +160,12 @@ func (maze *Maze) PointIsExit(point *Point) bool {
 
 // Advance the point forward by the argument direction
 func (point *Point) Advance(direction int) *Point {
-	return &Point{point.X + dx[direction], point.Y + dy[direction]}
+	return &Point{point.Y + dy[direction], point.X + dx[direction]}
 }
 
 // Contains judges whether the argument point is inside Maze or not
 func (maze *Maze) Contains(point *Point) bool {
-	return 0 <= point.X && point.X < maze.Height && 0 <= point.Y && point.Y < maze.Width
+	return 0 <= point.X && point.X < maze.Width && 0 <= point.Y && point.Y < maze.Height
 }
 
 // Move the cursor
@@ -161,9 +173,9 @@ func (maze *Maze) Move(direction int) {
 	point := maze.Cursor
 	next := point.Advance(direction)
 	// If there's a path on the Maze, we can move the cursor
-	if maze.Contains(next) && maze.Directions[point.X][point.Y]&direction == direction {
-		maze.Directions[point.X][point.Y] ^= direction << VisitedOffset
-		maze.Directions[next.X][next.Y] ^= Opposite[direction] << VisitedOffset
+	if maze.Contains(next) && maze.Directions[point.Y][point.X]&direction == direction {
+		//maze.Directions[point.X][point.Y] ^= direction << VisitedOffset
+		//maze.Directions[next.X][next.Y] ^= Opposite[direction] << VisitedOffset
 		maze.Cursor = next
 	}
 }
@@ -203,6 +215,7 @@ func (maze *Maze) PrintImage(writer io.Writer, format *Format, scale int) {
 	height := len(lines)
 	img := image.NewRGBA(image.Rect(0, 0, width*scale, height*scale))
 	green := color.RGBA{0, 255, 0, 255}
+	floorColor := color.RGBA{119, 136, 153, 255}
 	for y := 0; y < height; y++ {
 		if y >= len(lines) {
 			continue
@@ -217,28 +230,34 @@ func (maze *Maze) PrintImage(writer io.Writer, format *Format, scale int) {
 			case "<<", "VV", "^^", ">>":
 				plot(img, x, y, scale, green)
 			default:
-				plot(img, x, y, scale, color.White)
+				plot(img, x, y, scale, floorColor)
 			}
 		}
 	}
-	png.Encode(writer, img)
+	_ = png.Encode(writer, img)
 }
 
 // Write out the Maze to the writer channel
+//It walks the 2D array of cells and follows this algorithm:
+/*
+1. For each column, the first cell is the top row. If the column is the middle column and the "Up" direction check this cell is the North exit
+2. For the rest of the column:
+	2.a
+*/
 func (maze *Maze) Write(writer chan string, format *Format) {
 	//Print global maze location
 	maze.printLocation()
 	writer <- "\n"
-	for x, row := range maze.Directions {
+	for y, row := range maze.Directions {
 		// There are two lines printed for each Maze line
 		for _, direction := range []int{Up, Right} {
 			// The left wall
-			if x == maze.Height/2 && direction == Right {
+			if y == maze.Height/2 && direction == Right {
 				writer <- format.ExitLeft
 			} else {
 				writer <- format.Wall
 			}
-			for y, directions := range row {
+			for x, directions := range row {
 				// In the `direction == Right` line, we print the path cell
 				if direction == Right {
 					if maze.Cursor.X == x && maze.Cursor.Y == y {
@@ -249,9 +268,9 @@ func (maze *Maze) Write(writer chan string, format *Format) {
 				}
 				if directions&direction != 0 { // If there is a path in the direction (Up or Right) on the Maze
 					writer <- format.Path
-				} else if direction == Up && y == maze.Width/2 && x == 0 {
+				} else if direction == Up && x == maze.Width/2 && y == 0 {
 					writer <- format.ExitUp
-				} else if direction == Right && x == maze.Height/2 && y == maze.Width-1 {
+				} else if direction == Right && x == maze.Width-1 && y == maze.Height/2 {
 					writer <- format.ExitRight
 				} else {
 					writer <- format.Wall
@@ -265,8 +284,8 @@ func (maze *Maze) Write(writer chan string, format *Format) {
 	}
 	// Print the bottom wall of the Maze
 	writer <- format.Wall
-	for y := 0; y < maze.Width; y++ {
-		if y == maze.Width/2 {
+	for x := 0; x < maze.Width; x++ {
+		if x == maze.Width/2 {
 			writer <- format.ExitDown
 		} else {
 			writer <- format.Wall

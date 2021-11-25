@@ -2,7 +2,7 @@ package internal
 
 // Point on a Maze
 type Point struct {
-	X, Y int
+	Y, X int
 }
 
 // Equal judges the equality of the two points
